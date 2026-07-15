@@ -315,7 +315,7 @@ export default function SessionView({ preferences }) {
           </button>
         )}
 
-        {(sessionStatus === 'running' || sessionStatus === 'paused') && (
+        {(sessionStatus !== 'idle' && sessionStatus !== 'finished') && (
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             {activeTaskIndex > 0 && (
               <button 
@@ -332,22 +332,41 @@ export default function SessionView({ preferences }) {
                 <SkipBack size={24} />
               </button>
             )}
+            
             <button 
               onClick={togglePause}
-            style={{ 
-              background: 'var(--text-primary)', color: 'white', 
-              padding: '16px 32px', borderRadius: 'var(--radius-full)',
-              fontSize: '18px', fontWeight: 600,
-              boxShadow: 'var(--shadow-lg)',
-              display: 'flex', alignItems: 'center', gap: '8px'
-            }}
-          >
-            {sessionStatus === 'running' ? (
-              <><Pause size={24} fill="white" /> Pause</>
-            ) : (
-              <><Play size={24} fill="white" /> Resume</>
-            )}
-          </button>
+              style={{ 
+                background: 'var(--text-primary)', color: 'white', 
+                padding: '16px 32px', borderRadius: 'var(--radius-full)',
+                fontSize: '18px', fontWeight: 600,
+                boxShadow: 'var(--shadow-lg)',
+                display: 'flex', alignItems: 'center', gap: '8px'
+              }}
+            >
+              {(sessionStatus === 'running' || sessionStatus === 'waiting_next') ? (
+                <><Pause size={24} fill="white" /> Pause</>
+              ) : (
+                <><Play size={24} fill="white" /> Resume</>
+              )}
+            </button>
+
+            <button 
+              onClick={() => {
+                if(window.confirm('Are you sure you want to reset the session?')) {
+                  resetSession();
+                }
+              }}
+              title="Stop & Reset Session"
+              style={{ 
+                background: 'var(--bg-secondary)', color: 'var(--accent-primary)', 
+                padding: '16px', borderRadius: 'var(--radius-full)',
+                boxShadow: 'var(--shadow-md)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                border: '1px solid var(--border-color)'
+              }}
+            >
+              <RotateCcw size={24} />
+            </button>
           </div>
         )}
 

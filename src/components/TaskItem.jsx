@@ -101,7 +101,7 @@ export default function TaskItem({
         </div>
       )}
 
-      <div style={{ flex: 1 }} onClick={() => !isActive && !isCompleted && setIsEditing(true)}>
+      <div style={{ flex: 1 }} onClick={() => !isCompleted && setIsEditing(true)}>
         <p style={{ fontWeight: isActive ? 600 : 500, color: isCompleted ? 'var(--text-secondary)' : 'var(--text-primary)', textDecoration: isCompleted ? 'line-through' : 'none' }}>
           {task.name}
         </p>
