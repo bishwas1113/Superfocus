@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 
-:root {
+:root, [data-theme="japandi"] {
   /* Japandi + Playful Palette */
   --bg-primary: #F9F8F6; /* Soft warm white */
   --bg-secondary: #FFFFFF;
@@ -27,6 +27,48 @@
   --radius-full: 9999px;
 
   --font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+}
+
+[data-theme="midnight"] {
+  --bg-primary: #121212;
+  --bg-secondary: #1E1E1E;
+  --bg-tertiary: #2C2C2C;
+  
+  --text-primary: #E0E0E0;
+  --text-secondary: #A0A0A0;
+  --text-inverse: #121212;
+
+  --accent-primary: #879AA3; /* Muted steel blue */
+  --accent-primary-hover: #9BAEBA;
+  --accent-secondary: #9B8BA3; /* Muted violet */
+  --accent-secondary-hover: #AFA0B8;
+  --accent-tertiary: #A3878E; /* Muted rose */
+  
+  --border-color: #333333;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="vibrant"] {
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F4F6F8;
+  --bg-tertiary: #EAECEF;
+  
+  --text-primary: #1A1A1A;
+  --text-secondary: #5A5A5A;
+  --text-inverse: #FFFFFF;
+
+  --accent-primary: #FF5A5F; /* Bold red/pink */
+  --accent-primary-hover: #FF7B7F;
+  --accent-secondary: #3B82F6; /* Bold blue */
+  --accent-secondary-hover: #60A5FA;
+  --accent-tertiary: #F59E0B; /* Bright amber */
+  
+  --border-color: #E2E8F0;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.16);
 }
 
 * {

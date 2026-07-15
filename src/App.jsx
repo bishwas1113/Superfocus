@@ -1,19 +1,42 @@
+import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom';
-import { Timer, Gift } from 'lucide-react';
+import { Timer, Gift, Settings } from 'lucide-react';
 import SessionView from './components/SessionView';
 import RewardsView from './components/RewardsView';
+import SettingsModal from './components/SettingsModal';
+import { useLocalStorage } from './hooks/useLocalStorage';
 
 function App() {
+  const [preferences, setPreferences] = useLocalStorage('hyperfocus_prefs', { theme: 'japandi', sound: 'chime' });
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  useEffect(() => {
+    document.body.setAttribute('data-theme', preferences.theme);
+  }, [preferences.theme]);
+
   return (
     <BrowserRouter>
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: '100vh', paddingBottom: '80px' }}>
-        <header style={{ padding: '20px', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}>
-          <h1 style={{ color: 'var(--accent-secondary)' }}>Hyperfocus</h1>
+        <header style={{ 
+          padding: '20px', 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          borderBottom: '1px solid var(--border-color)',
+          position: 'relative'
+        }}>
+          <h1 style={{ color: 'var(--accent-secondary)', margin: 0 }}>Hyperfocus</h1>
+          <button 
+            onClick={() => setIsSettingsOpen(true)}
+            style={{ position: 'absolute', right: '20px', color: 'var(--text-secondary)' }}
+          >
+            <Settings size={24} />
+          </button>
         </header>
 
         <main style={{ flex: 1, overflowY: 'auto' }}>
           <Routes>
-            <Route path="/" element={<SessionView />} />
+            <Route path="/" element={<SessionView preferences={preferences} />} />
             <Route path="/rewards" element={<RewardsView />} />
           </Routes>
         </main>
@@ -25,8 +48,7 @@ function App() {
           right: 0, 
           maxWidth: '480px',
           margin: '0 auto',
-          background: 'rgba(255, 255, 255, 0.9)',
-          backdropFilter: 'blur(10px)',
+          background: 'var(--bg-primary)',
           borderTop: '1px solid var(--border-color)',
           display: 'flex',
           justifyContent: 'space-around',
@@ -54,6 +76,14 @@ function App() {
             <span style={{ fontSize: '12px', marginTop: '4px', fontWeight: 500 }}>Rewards</span>
           </NavLink>
         </nav>
+
+        {isSettingsOpen && (
+          <SettingsModal 
+            onClose={() => setIsSettingsOpen(false)} 
+            preferences={preferences} 
+            setPreferences={setPreferences} 
+          />
+        )}
       </div>
     </BrowserRouter>
   );

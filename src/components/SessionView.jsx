@@ -13,7 +13,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { Plus, Play, Pause, Save, RefreshCw } from 'lucide-react';
+import { Plus, Play, Pause, Save, RefreshCw, SkipBack, RotateCcw, Coffee } from 'lucide-react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { playCompletionSound } from '../utils/sound';
 import TaskItem from './TaskItem';
@@ -26,7 +26,7 @@ const DEFAULT_TASKS = [
   { id: '3', name: 'Write notes', estimatedTime: 15 },
 ];
 
-export default function SessionView() {
+export default function SessionView({ preferences }) {
   const [sessions, setSessions] = useLocalStorage('hyperfocus_sessions', { 'Default': DEFAULT_TASKS });
   const [activeSessionName, setActiveSessionName] = useState('Default');
   
@@ -37,6 +37,8 @@ export default function SessionView() {
   const [timeRemaining, setTimeRemaining] = useState(0); // in seconds
   const [stopwatchTime, setStopwatchTime] = useState(0); // in seconds
   
+  const [lastDeleted, setLastDeleted] = useState(null); // { task, index, timeoutId }
+
   const timerRef = useRef(null);
   
   // Timer effect
@@ -49,7 +51,12 @@ export default function SessionView() {
           setTimeRemaining(prev => {
             if (prev <= 1) {
               // Timer just finished!
-              if (prev === 1) playCompletionSound();
+              if (prev === 1) {
+                playCompletionSound(preferences?.sound || 'chime');
+                if (preferences?.vibrate && 'vibrate' in navigator) {
+                  navigator.vibrate([300, 150, 300, 150, 500]);
+                }
+              }
               setSessionStatus('waiting_next'); // Timer 0, but stopwatch keeps going
               return 0;
             }
@@ -117,6 +124,25 @@ export default function SessionView() {
     }
   };
 
+  const undoNextTask = () => {
+    if (activeTaskIndex > 0) {
+      const prevIndex = activeTaskIndex - 1;
+      const updatedTasks = [...tasks];
+      updatedTasks[activeTaskIndex].actualTime = undefined;
+      
+      const restoredStopwatch = updatedTasks[prevIndex].actualTime || 0;
+      updatedTasks[prevIndex].actualTime = undefined;
+      
+      setTasks(updatedTasks);
+      setActiveTaskIndex(prevIndex);
+      setStopwatchTime(restoredStopwatch);
+      
+      const estSecs = updatedTasks[prevIndex].estimatedTime * 60;
+      setTimeRemaining(Math.max(0, estSecs - restoredStopwatch));
+      setSessionStatus('paused');
+    }
+  };
+
   const resetSession = () => {
     setSessionStatus('idle');
     setActiveTaskIndex(-1);
@@ -151,7 +177,29 @@ export default function SessionView() {
   };
 
   const deleteTask = (id) => {
+    const index = tasks.findIndex(t => t.id === id);
+    const taskToDelete = tasks[index];
     setTasks(tasks.filter(t => t.id !== id));
+    
+    if (lastDeleted && lastDeleted.timeoutId) {
+      clearTimeout(lastDeleted.timeoutId);
+    }
+    
+    const timeoutId = setTimeout(() => {
+      setLastDeleted(null);
+    }, 5000);
+    
+    setLastDeleted({ task: taskToDelete, index, timeoutId });
+  };
+
+  const undoDelete = () => {
+    if (lastDeleted) {
+      clearTimeout(lastDeleted.timeoutId);
+      const updatedTasks = [...tasks];
+      updatedTasks.splice(lastDeleted.index, 0, lastDeleted.task);
+      setTasks(updatedTasks);
+      setLastDeleted(null);
+    }
   };
 
   return (
@@ -214,18 +262,38 @@ export default function SessionView() {
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={tasks} strategy={verticalListSortingStrategy}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {tasks.map((task, index) => (
-              <TaskItem 
-                key={task.id} 
-                task={task} 
-                isActive={index === activeTaskIndex}
-                isCompleted={index < activeTaskIndex || (sessionStatus === 'finished' && index <= activeTaskIndex)}
-                isNext={sessionStatus === 'waiting_next' && index === activeTaskIndex}
-                onUpdate={updateTask}
-                onDelete={deleteTask}
-                onPlay={playNextTask}
-              />
-            ))}
+            {tasks.length === 0 ? (
+              <div style={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                padding: '40px 20px',
+                color: 'var(--text-secondary)',
+                background: 'var(--bg-tertiary)',
+                borderRadius: 'var(--radius-lg)',
+                border: '1px dashed var(--border-color)',
+                textAlign: 'center',
+                gap: '12px'
+              }}>
+                <Coffee size={40} style={{ color: 'var(--accent-primary)', opacity: 0.5 }} />
+                <p>No tasks in this routine.<br/>Add a task to start focusing.</p>
+              </div>
+            ) : (
+              tasks.map((task, index) => (
+                <TaskItem 
+                  key={task.id} 
+                  task={task} 
+                  isActive={index === activeTaskIndex}
+                  isCompleted={index < activeTaskIndex || (sessionStatus === 'finished' && index <= activeTaskIndex)}
+                  isNext={sessionStatus === 'waiting_next' && index === activeTaskIndex}
+                  onUpdate={updateTask}
+                  onDelete={deleteTask}
+                  onPlay={playNextTask}
+                  onFinishTask={playNextTask}
+                />
+              ))
+            )}
           </div>
         </SortableContext>
       </DndContext>
@@ -248,36 +316,38 @@ export default function SessionView() {
         )}
 
         {(sessionStatus === 'running' || sessionStatus === 'paused') && (
-          <div style={{ display: 'flex', gap: '12px' }}>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            {activeTaskIndex > 0 && (
+              <button 
+                onClick={undoNextTask}
+                title="Previous Task (Undo)"
+                style={{ 
+                  background: 'var(--bg-secondary)', color: 'var(--text-primary)', 
+                  padding: '16px', borderRadius: 'var(--radius-full)',
+                  boxShadow: 'var(--shadow-md)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  border: '1px solid var(--border-color)'
+                }}
+              >
+                <SkipBack size={24} />
+              </button>
+            )}
             <button 
               onClick={togglePause}
-              style={{ 
-                background: 'var(--text-primary)', color: 'white', 
-                padding: '16px 32px', borderRadius: 'var(--radius-full)',
-                fontSize: '18px', fontWeight: 600,
-                boxShadow: 'var(--shadow-lg)',
-                display: 'flex', alignItems: 'center', gap: '8px'
-              }}
-            >
-              {sessionStatus === 'running' ? (
-                <><Pause size={24} fill="white" /> Pause</>
-              ) : (
-                <><Play size={24} fill="white" /> Resume</>
-              )}
-            </button>
-            <button 
-              onClick={() => setSessionStatus('waiting_next')}
-              style={{ 
-                background: 'var(--bg-secondary)', color: 'var(--text-primary)', 
-                padding: '16px 24px', borderRadius: 'var(--radius-full)',
-                fontSize: '16px', fontWeight: 600,
-                boxShadow: 'var(--shadow-md)',
-                display: 'flex', alignItems: 'center', gap: '8px',
-                border: '1px solid var(--border-color)'
-              }}
-            >
-              Finish Task
-            </button>
+            style={{ 
+              background: 'var(--text-primary)', color: 'white', 
+              padding: '16px 32px', borderRadius: 'var(--radius-full)',
+              fontSize: '18px', fontWeight: 600,
+              boxShadow: 'var(--shadow-lg)',
+              display: 'flex', alignItems: 'center', gap: '8px'
+            }}
+          >
+            {sessionStatus === 'running' ? (
+              <><Pause size={24} fill="white" /> Pause</>
+            ) : (
+              <><Play size={24} fill="white" /> Resume</>
+            )}
+          </button>
           </div>
         )}
 
@@ -299,6 +369,38 @@ export default function SessionView() {
 
       {sessionStatus === 'finished' && (
         <RewardModal onClose={() => setSessionStatus('idle')} />
+      )}
+
+      {lastDeleted && (
+        <div className="animate-slide-up" style={{
+          position: 'fixed',
+          bottom: '100px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: 'var(--text-primary)',
+          color: 'white',
+          padding: '12px 20px',
+          borderRadius: 'var(--radius-full)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '16px',
+          boxShadow: 'var(--shadow-lg)',
+          zIndex: 100
+        }}>
+          <span style={{ fontSize: '14px' }}>Task deleted</span>
+          <button 
+            onClick={undoDelete}
+            style={{ 
+              color: 'var(--accent-tertiary)', 
+              fontWeight: 600, 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '4px' 
+            }}
+          >
+            <RotateCcw size={16} /> Undo
+          </button>
+        </div>
       )}
     </div>
   );

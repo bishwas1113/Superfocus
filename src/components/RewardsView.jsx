@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { Plus, Trash2, Clock, Coffee } from 'lucide-react';
+import { Plus, Trash2, Clock, Coffee, Gift } from 'lucide-react';
 
 const DEFAULT_REWARDS = [
   { id: '1', name: 'Watch TV episode', duration: 'long' },
@@ -148,9 +148,23 @@ export default function RewardsView() {
           </div>
         ))}
         {rewards.length === 0 && (
-          <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginTop: '20px' }}>
-            No rewards added yet.
-          </p>
+          <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            padding: '40px 20px',
+            color: 'var(--text-secondary)',
+            background: 'var(--bg-tertiary)',
+            borderRadius: 'var(--radius-lg)',
+            border: '1px dashed var(--border-color)',
+            textAlign: 'center',
+            gap: '12px',
+            marginTop: '12px'
+          }}>
+            <Gift size={40} style={{ color: 'var(--accent-secondary)', opacity: 0.5 }} />
+            <p>No rewards added yet.<br/>Add some treats to motivate yourself!</p>
+          </div>
         )}
       </div>
     </div>

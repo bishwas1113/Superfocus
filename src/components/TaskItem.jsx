@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Play, Check, Trash2 } from 'lucide-react';
+import { GripVertical, Play, Check, Trash2, FastForward } from 'lucide-react';
 
 export default function TaskItem({ 
   task, 
@@ -9,7 +9,8 @@ export default function TaskItem({
   isCompleted, 
   onUpdate, 
   onDelete,
-  onPlay, 
+  onPlay,
+  onFinishTask,
   isNext 
 }) {
   const {
@@ -129,6 +130,28 @@ export default function TaskItem({
           }}
         >
           <Play size={24} fill="white" />
+        </button>
+      )}
+
+      {isActive && !isNext && (
+        <button 
+          onClick={onFinishTask}
+          className="animate-pop-in"
+          title="Finish Task Early"
+          style={{ 
+            background: 'var(--bg-primary)', 
+            color: 'var(--accent-primary)', 
+            border: '2px solid var(--accent-primary)',
+            width: '48px', 
+            height: '48px', 
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: 'var(--shadow-sm)'
+          }}
+        >
+          <FastForward size={20} />
         </button>
       )}
     </div>
