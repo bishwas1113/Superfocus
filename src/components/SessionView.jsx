@@ -245,16 +245,19 @@ export default function SessionView({ preferences }) {
         {sessionStatus === 'idle' && (
           <button 
             onClick={addTask}
+            title="Add Task"
+            className="animate-pop-in"
             style={{ 
               background: 'var(--text-primary)', 
               color: 'white', 
-              padding: '6px 12px', 
-              borderRadius: 'var(--radius-full)',
-              display: 'flex', alignItems: 'center', gap: '4px',
-              fontSize: '14px'
+              width: '36px', 
+              height: '36px', 
+              borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: 'var(--shadow-sm)'
             }}
           >
-            <Plus size={16} /> Add Task
+            <Plus size={20} />
           </button>
         )}
       </div>

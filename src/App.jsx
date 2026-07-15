@@ -23,9 +23,11 @@ function App() {
           justifyContent: 'center', 
           alignItems: 'center', 
           borderBottom: '1px solid var(--border-color)',
-          position: 'relative'
+          position: 'relative',
+          gap: '12px'
         }}>
-          <h1 style={{ color: 'var(--accent-secondary)', margin: 0 }}>Hyperfocus</h1>
+          <img src="./icon.png" alt="Superfocus Icon" style={{ width: '32px', height: '32px', borderRadius: '8px' }} />
+          <h1 style={{ color: 'var(--accent-secondary)', margin: 0 }}>Superfocus</h1>
           <button 
             onClick={() => setIsSettingsOpen(true)}
             style={{ position: 'absolute', right: '20px', color: 'var(--text-secondary)' }}
