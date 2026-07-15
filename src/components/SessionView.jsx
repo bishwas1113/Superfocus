@@ -41,6 +41,37 @@ export default function SessionView({ preferences }) {
 
   const timerRef = useRef(null);
   
+  // Calculate Session Metrics
+  const totalEstimatedSeconds = tasks.reduce((acc, task) => acc + (task.estimatedTime * 60), 0);
+  
+  let totalElapsedSeconds = 0;
+  if (sessionStatus === 'finished') {
+    totalElapsedSeconds = tasks.reduce((acc, task) => acc + (task.actualTime || 0), 0);
+  } else if (sessionStatus !== 'idle') {
+    totalElapsedSeconds = tasks.reduce((acc, task, index) => {
+      if (index < activeTaskIndex) return acc + (task.actualTime || 0);
+      if (index === activeTaskIndex) return acc + stopwatchTime;
+      return acc;
+    }, 0);
+  }
+
+  const sessionProgressPercent = totalEstimatedSeconds > 0 
+    ? Math.min(100, (totalElapsedSeconds / totalEstimatedSeconds) * 100) 
+    : 0;
+  
+  const isOverTime = totalElapsedSeconds > totalEstimatedSeconds;
+
+  const formatTime = (secs) => {
+    if (secs < 0) secs = 0;
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = secs % 60;
+    if (h > 0) {
+      return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
   // Timer effect
   useEffect(() => {
     if (sessionStatus === 'running' || sessionStatus === 'waiting_next') {
@@ -69,7 +100,7 @@ export default function SessionView({ preferences }) {
     }
     
     return () => clearInterval(timerRef.current);
-  }, [sessionStatus]);
+  }, [sessionStatus, preferences]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -231,6 +262,38 @@ export default function SessionView({ preferences }) {
           <Save size={18} /> <span style={{ fontSize: '14px', fontWeight: 500 }}>Save Routine</span>
         </button>
       </div>
+
+      {/* Session Progress Bar */}
+      {sessionStatus !== 'idle' && (
+        <div style={{ marginBottom: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+            <span style={{ fontWeight: 600 }}>Session Progress</span>
+            <span style={{ fontFamily: 'var(--mono)' }}>
+              <span style={{ color: isOverTime ? '#C58B86' : 'var(--text-primary)' }}>
+                {formatTime(totalElapsedSeconds)}
+              </span>
+              {' / '}{formatTime(totalEstimatedSeconds)}
+            </span>
+          </div>
+          <div style={{ 
+            height: '8px', 
+            background: 'var(--bg-tertiary)', 
+            borderRadius: 'var(--radius-full)',
+            position: 'relative',
+            overflow: 'hidden',
+            boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)'
+          }}>
+            <div style={{ 
+              position: 'absolute', 
+              top: 0, left: 0, bottom: 0,
+              width: `${sessionProgressPercent}%`,
+              background: isOverTime ? '#C58B86' : '#82A082',
+              borderRadius: 'var(--radius-full)',
+              transition: 'width 1s linear, background 0.3s ease'
+            }} />
+          </div>
+        </div>
+      )}
 
       <VisualTimer 
         estimatedTimeMinutes={activeTaskIndex >= 0 ? tasks[activeTaskIndex].estimatedTime : 0}
