@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom';
+import { HashRouter, Routes, Route, NavLink } from 'react-router-dom';
 import { Timer, Gift, Settings } from 'lucide-react';
 import SessionView from './components/SessionView';
 import RewardsView from './components/RewardsView';
@@ -15,7 +15,7 @@ function App() {
   }, [preferences.theme]);
 
   return (
-    <BrowserRouter>
+    <HashRouter>
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: '100vh', paddingBottom: '80px' }}>
         <header style={{ 
           padding: '20px', 
@@ -85,7 +85,7 @@ function App() {
           />
         )}
       </div>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
