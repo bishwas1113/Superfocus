@@ -40,6 +40,7 @@ export default function SessionView({ preferences }) {
   const [lastDeleted, setLastDeleted] = useState(null); // { task, index, timeoutId }
 
   const timerRef = useRef(null);
+  const lastTickRef = useRef(null);
   
   // Calculate Session Metrics
   const totalEstimatedSeconds = tasks.reduce((acc, task) => acc + (task.estimatedTime * 60), 0);
@@ -72,29 +73,39 @@ export default function SessionView({ preferences }) {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
-  // Timer effect
+  // Timer effect (uses delta time to catch up after backgrounding/sleeping)
   useEffect(() => {
     if (sessionStatus === 'running' || sessionStatus === 'waiting_next') {
+      lastTickRef.current = Date.now();
+      
       timerRef.current = setInterval(() => {
-        setStopwatchTime(prev => prev + 1);
+        const now = Date.now();
+        const deltaMs = now - lastTickRef.current;
+        const deltaSecs = Math.floor(deltaMs / 1000);
         
-        if (sessionStatus === 'running') {
-          setTimeRemaining(prev => {
-            if (prev <= 1) {
-              // Timer just finished!
-              if (prev === 1) {
-                playCompletionSound(preferences?.sound || 'chime');
-                if (preferences?.vibrate && 'vibrate' in navigator) {
-                  navigator.vibrate([300, 150, 300, 150, 500]);
+        if (deltaSecs >= 1) {
+          lastTickRef.current += deltaSecs * 1000;
+          setStopwatchTime(prev => prev + deltaSecs);
+          
+          if (sessionStatus === 'running') {
+            setTimeRemaining(prev => {
+              const nextTime = prev - deltaSecs;
+              if (nextTime <= 0) {
+                // If we just crossed the zero threshold
+                if (prev > 0) {
+                  playCompletionSound(preferences?.sound || 'chime');
+                  if (preferences?.vibrate && 'vibrate' in navigator) {
+                    navigator.vibrate([300, 150, 300, 150, 500]);
+                  }
                 }
+                setSessionStatus('waiting_next'); // Timer 0, but stopwatch keeps going
+                return 0;
               }
-              setSessionStatus('waiting_next'); // Timer 0, but stopwatch keeps going
-              return 0;
-            }
-            return prev - 1;
-          });
+              return nextTime;
+            });
+          }
         }
-      }, 1000);
+      }, 500); // Check twice a second to feel responsive
     } else {
       clearInterval(timerRef.current);
     }
