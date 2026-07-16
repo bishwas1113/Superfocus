@@ -7,12 +7,19 @@ import SettingsModal from './components/SettingsModal';
 import { useLocalStorage } from './hooks/useLocalStorage';
 
 function App() {
-  const [preferences, setPreferences] = useLocalStorage('hyperfocus_prefs', { theme: 'japandi', sound: 'chime' });
+  const [preferences, setPreferences] = useLocalStorage('hyperfocus_prefs', { theme: 'japandi', sound: 'chime', syncUrl: '' });
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [syncStatus, setSyncStatus] = useState('idle');
 
   useEffect(() => {
     document.body.setAttribute('data-theme', preferences.theme);
   }, [preferences.theme]);
+
+  useEffect(() => {
+    const handleStatus = (e) => setSyncStatus(e.detail);
+    window.addEventListener('sync-status', handleStatus);
+    return () => window.removeEventListener('sync-status', handleStatus);
+  }, []);
 
   return (
     <HashRouter>
@@ -84,6 +91,7 @@ function App() {
             onClose={() => setIsSettingsOpen(false)} 
             preferences={preferences} 
             setPreferences={setPreferences} 
+            syncStatus={syncStatus}
           />
         )}
       </div>

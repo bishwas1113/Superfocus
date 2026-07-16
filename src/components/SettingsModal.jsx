@@ -115,6 +115,48 @@ export default function SettingsModal({ onClose, preferences, setPreferences }) 
             Note: Vibration is supported on Android devices. iOS/iPhones restrict web browsers from vibrating.
           </p>
         </div>
+
+        {/* Cloud Sync Settings */}
+        <div style={{ marginTop: '32px' }}>
+          <h3 style={{ fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-secondary)', marginBottom: '12px' }}>Cloud Sync (Google Sheets)</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <input 
+              type="text" 
+              placeholder="Paste Apps Script Web App URL here"
+              value={preferences.syncUrl || ''}
+              onChange={(e) => setPreferences(prev => ({ ...prev, syncUrl: e.target.value }))}
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: 'var(--radius-sm)',
+                border: '1px solid var(--border-color)',
+                background: 'var(--bg-secondary)',
+                color: 'var(--text-primary)',
+                fontFamily: 'inherit'
+              }}
+            />
+            {preferences.syncUrl && (
+              <button 
+                onClick={() => window.dispatchEvent(new Event('trigger-manual-sync'))}
+                disabled={syncStatus === 'syncing'}
+                style={{
+                  background: 'var(--accent-primary)',
+                  color: 'white',
+                  padding: '10px',
+                  borderRadius: 'var(--radius-sm)',
+                  fontWeight: 600,
+                  opacity: syncStatus === 'syncing' ? 0.7 : 1,
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                {syncStatus === 'syncing' ? 'Syncing...' : 'Sync Now'}
+              </button>
+            )}
+            {syncStatus === 'success' && <p style={{ fontSize: '12px', color: '#82A082', marginTop: '4px' }}>Successfully synced!</p>}
+            {syncStatus === 'error' && <p style={{ fontSize: '12px', color: '#C58B86', marginTop: '4px' }}>Error syncing. Check URL.</p>}
+          </div>
+        </div>
         
       </div>
     </div>

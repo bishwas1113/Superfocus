@@ -27,7 +27,23 @@ const DEFAULT_TASKS = [
 ];
 
 export default function SessionView({ preferences }) {
-  const [sessions, setSessions] = useLocalStorage('hyperfocus_sessions', { 'Default': DEFAULT_TASKS });
+  const [sessionsData, setSessionsData] = useLocalStorage('hyperfocus_sessions_data', () => {
+    const oldSessions = window.localStorage.getItem('hyperfocus_sessions');
+    if (oldSessions) {
+      try {
+        const parsed = JSON.parse(oldSessions);
+        return { sessions: parsed, lastUpdated: Date.now() };
+      } catch(e) {}
+    }
+    return { sessions: { 'Default': DEFAULT_TASKS }, lastUpdated: Date.now() };
+  });
+  
+  const { sessions, lastUpdated } = sessionsData;
+
+  const updateSessions = (newSessions) => {
+    setSessionsData({ sessions: newSessions, lastUpdated: Date.now() });
+  };
+
   const [activeSessionName, setActiveSessionName] = useState('Default');
   
   const [tasks, setTasks] = useState(sessions['Default']);
@@ -197,7 +213,7 @@ export default function SessionView({ preferences }) {
   const saveRoutine = () => {
     const name = prompt("Enter a name for this routine (e.g. Morning Routine):");
     if (name) {
-      setSessions({ ...sessions, [name]: tasks });
+      updateSessions({ ...sessions, [name]: tasks });
       setActiveSessionName(name);
     }
   };
@@ -243,6 +259,66 @@ export default function SessionView({ preferences }) {
       setLastDeleted(null);
     }
   };
+
+  const performSync = async () => {
+    if (!preferences?.syncUrl) return;
+    window.dispatchEvent(new CustomEvent('sync-status', { detail: 'syncing' }));
+    
+    try {
+      const res = await fetch(preferences.syncUrl);
+      const json = await res.json();
+      
+      if (json.status === 'success' && json.data) {
+        const cloudData = json.data;
+        if (cloudData.lastUpdated && cloudData.lastUpdated > lastUpdated) {
+          setSessionsData(cloudData);
+          if (cloudData.sessions[activeSessionName]) {
+            setTasks(cloudData.sessions[activeSessionName]);
+          }
+          window.dispatchEvent(new CustomEvent('sync-status', { detail: 'success' }));
+          return;
+        }
+      }
+      
+      const postRes = await fetch(preferences.syncUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ data: sessionsData })
+      });
+      const postJson = await postRes.json();
+      if (postJson.status === 'success' || postJson.status === 'conflict') {
+        window.dispatchEvent(new CustomEvent('sync-status', { detail: 'success' }));
+      } else {
+        window.dispatchEvent(new CustomEvent('sync-status', { detail: 'error' }));
+      }
+    } catch (err) {
+      console.error(err);
+      window.dispatchEvent(new CustomEvent('sync-status', { detail: 'error' }));
+    }
+  };
+
+  // Sync on mount if URL exists
+  useEffect(() => {
+    if (preferences?.syncUrl) performSync();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preferences?.syncUrl]);
+
+  // Sync on manual trigger
+  useEffect(() => {
+    window.addEventListener('trigger-manual-sync', performSync);
+    return () => window.removeEventListener('trigger-manual-sync', performSync);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionsData, preferences?.syncUrl, activeSessionName]);
+  
+  // Auto sync on data change
+  useEffect(() => {
+    if (!preferences?.syncUrl) return;
+    const timeout = setTimeout(() => {
+      performSync();
+    }, 2000);
+    return () => clearTimeout(timeout);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionsData]);
 
   return (
     <div style={{ padding: '20px' }}>
