@@ -45,51 +45,71 @@ export default function VisualTimer({ estimatedTimeMinutes, timeRemaining, stopw
         transform: 'rotate(45deg)'
       }} />
 
-      <div style={{ position: 'relative', width: '200px', height: '200px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <div style={{ position: 'relative', width: '240px', height: '240px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         
-        {/* Analog Clock Face */}
-        <svg width="200" height="200" viewBox="0 0 200 200">
-          {/* Subtle outer ring */}
-          <circle cx="100" cy="100" r="90" fill="var(--bg-primary)" stroke="var(--border-color)" strokeWidth="2" />
+        {/* Analog Clock Face with Traditional Twin-Bell Frame */}
+        <svg width="240" height="240" viewBox="0 0 240 240">
+          
+          {/* Handle */}
+          <path d="M 70 45 C 70 5, 170 5, 170 45" fill="none" stroke="#95a5a6" strokeWidth="6" strokeLinecap="round" />
+          
+          {/* Hammer */}
+          <rect x="117" y="30" width="6" height="25" fill="#7f8c8d" />
+          <circle cx="120" cy="30" r="6" fill="#7f8c8d" />
+          
+          {/* Left Bell */}
+          <g transform="translate(65, 55) rotate(-25)">
+            <path d="M -30 0 A 30 30 0 0 1 30 0 Z" fill="#D32F2F" />
+            <rect x="-30" y="0" width="60" height="6" fill="#B71C1C" rx="2" />
+          </g>
+          
+          {/* Right Bell */}
+          <g transform="translate(175, 55) rotate(25)">
+            <path d="M -30 0 A 30 30 0 0 1 30 0 Z" fill="#D32F2F" />
+            <rect x="-30" y="0" width="60" height="6" fill="#B71C1C" rx="2" />
+          </g>
+
+          {/* Legs */}
+          <line x1="80" y1="200" x2="60" y2="230" stroke="#95a5a6" strokeWidth="6" strokeLinecap="round" />
+          <line x1="160" y1="200" x2="180" y2="230" stroke="#95a5a6" strokeWidth="6" strokeLinecap="round" />
+          
+          {/* Feet balls */}
+          <circle cx="60" cy="230" r="5" fill="#7f8c8d" />
+          <circle cx="180" cy="230" r="5" fill="#7f8c8d" />
+
+          {/* Main Red Frame */}
+          <circle cx="120" cy="130" r="95" fill="#D32F2F" />
+          <circle cx="120" cy="130" r="85" fill="#B71C1C" />
+
+          {/* White Clock Face (original) */}
+          <circle cx="120" cy="130" r="80" fill="var(--bg-primary)" />
           
           {/* Minimalist Tick marks for 12, 3, 6, 9 */}
-          <line x1="100" y1="15" x2="100" y2="25" stroke="var(--text-secondary)" strokeWidth="3" strokeLinecap="round" />
-          <line x1="100" y1="175" x2="100" y2="185" stroke="var(--text-secondary)" strokeWidth="3" strokeLinecap="round" />
-          <line x1="15" y1="100" x2="25" y2="100" stroke="var(--text-secondary)" strokeWidth="3" strokeLinecap="round" />
-          <line x1="175" y1="100" x2="185" y2="100" stroke="var(--text-secondary)" strokeWidth="3" strokeLinecap="round" />
+          <line x1="120" y1="55" x2="120" y2="65" stroke="var(--text-secondary)" strokeWidth="3" strokeLinecap="round" />
+          <line x1="120" y1="195" x2="120" y2="205" stroke="var(--text-secondary)" strokeWidth="3" strokeLinecap="round" />
+          <line x1="45" y1="130" x2="55" y2="130" stroke="var(--text-secondary)" strokeWidth="3" strokeLinecap="round" />
+          <line x1="195" y1="130" x2="185" y2="130" stroke="var(--text-secondary)" strokeWidth="3" strokeLinecap="round" />
 
-          {/* Progress Ring (Optional overlay, but adds nice feedback) */}
-          <circle 
-            cx="100" cy="100" r="80" 
-            fill="none" 
-            stroke="var(--bg-tertiary)" 
-            strokeWidth="4" 
-          />
-          <circle 
-            cx="100" cy="100" r="80" 
-            fill="none" 
-            stroke="var(--accent-secondary)" 
-            strokeWidth="4"
+          {/* Progress Ring */}
+          <circle cx="120" cy="130" r="70" fill="none" stroke="var(--bg-tertiary)" strokeWidth="4" />
+          <circle cx="120" cy="130" r="70" fill="none" stroke="var(--accent-secondary)" strokeWidth="4"
             strokeLinecap="round"
-            strokeDasharray="502.6" /* 2 * PI * 80 */
-            strokeDashoffset={502.6 - (percentage / 100) * 502.6}
-            style={{ transition: 'stroke-dashoffset 1s linear', transform: 'rotate(-90deg)', transformOrigin: 'center' }}
+            strokeDasharray="439.8"
+            strokeDashoffset={439.8 - (percentage / 100) * 439.8}
+            style={{ transition: 'stroke-dashoffset 1s linear', transform: 'rotate(-90deg)', transformOrigin: '120px 130px' }}
           />
 
           {/* Sweeping Clock Hand */}
-          <g style={{ transition: 'transform 1s linear', transform: `rotate(${handRotation}deg)`, transformOrigin: 'center' }}>
-            {/* The hand */}
-            <line x1="100" y1="100" x2="100" y2="30" stroke="var(--accent-primary)" strokeWidth="4" strokeLinecap="round" />
-            {/* Counterweight */}
-            <line x1="100" y1="100" x2="100" y2="115" stroke="var(--accent-primary)" strokeWidth="4" strokeLinecap="round" opacity="0.5" />
+          <g style={{ transition: 'transform 1s linear', transform: `rotate(${handRotation}deg)`, transformOrigin: '120px 130px' }}>
+            <line x1="120" y1="130" x2="120" y2="65" stroke="var(--accent-primary)" strokeWidth="4" strokeLinecap="round" />
+            <line x1="120" y1="130" x2="120" y2="145" stroke="var(--accent-primary)" strokeWidth="4" strokeLinecap="round" opacity="0.5" />
           </g>
 
-          {/* Center Pivot Dot */}
-          <circle cx="100" cy="100" r="6" fill="var(--text-primary)" />
-          <circle cx="100" cy="100" r="3" fill="var(--bg-primary)" />
+          <circle cx="120" cy="130" r="6" fill="var(--text-primary)" />
+          <circle cx="120" cy="130" r="3" fill="var(--bg-primary)" />
         </svg>
 
-        {/* Digital Time Overlay - moved below center for clock visibility */}
+        {/* Digital Time Overlay */}
         <div style={{
           position: 'absolute',
           bottom: '40px',
@@ -101,7 +121,8 @@ export default function VisualTimer({ estimatedTimeMinutes, timeRemaining, stopw
           padding: '2px 12px',
           borderRadius: '12px',
           boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-          border: '1px solid var(--border-color)'
+          border: '1px solid var(--border-color)',
+          zIndex: 10
         }}>
           <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--mono)' }}>
             {formatTime(timeRemaining)}
