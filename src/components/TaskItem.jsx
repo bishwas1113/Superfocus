@@ -21,6 +21,11 @@ export default function TaskItem({
   onFinishTask,
   isNext 
 }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState(task.name);
+  const [editTime, setEditTime] = useState(task.estimatedTime);
+  const [editColor, setEditColor] = useState(task.color || '');
+
   const {
     attributes,
     listeners,
@@ -29,11 +34,6 @@ export default function TaskItem({
     transition,
     isDragging,
   } = useSortable({ id: task.id, disabled: isActive || isCompleted || isEditing });
-
-  const [isEditing, setIsEditing] = useState(false);
-  const [editName, setEditName] = useState(task.name);
-  const [editTime, setEditTime] = useState(task.estimatedTime);
-  const [editColor, setEditColor] = useState(task.color || '');
 
   const style = {
     transform: CSS.Transform.toString(transform),
