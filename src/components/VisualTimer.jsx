@@ -49,14 +49,18 @@ export default function VisualTimer({ estimatedTimeMinutes, timeRemaining, stopw
         
         {clockShape === 'minimal' ? (
           <svg width="200" height="200" viewBox="0 0 200 200">
+            {/* Colored Outer Frame */}
+            <circle cx="100" cy="100" r="100" fill={clockColor} />
+            <circle cx="100" cy="100" r="94" fill="#000000" opacity="0.15" />
+            
             {/* White Clock Face */}
-            <circle cx="100" cy="100" r="95" fill="var(--bg-primary)" />
+            <circle cx="100" cy="100" r="90" fill="var(--bg-primary)" />
             
             {/* Minimalist Tick marks for 12, 3, 6, 9 */}
-            <line x1="100" y1="15" x2="100" y2="25" stroke="var(--text-secondary)" strokeWidth="3" strokeLinecap="round" />
-            <line x1="100" y1="175" x2="100" y2="185" stroke="var(--text-secondary)" strokeWidth="3" strokeLinecap="round" />
-            <line x1="15" y1="100" x2="25" y2="100" stroke="var(--text-secondary)" strokeWidth="3" strokeLinecap="round" />
-            <line x1="185" y1="100" x2="175" y2="100" stroke="var(--text-secondary)" strokeWidth="3" strokeLinecap="round" />
+            <line x1="100" y1="20" x2="100" y2="30" stroke="var(--text-secondary)" strokeWidth="3" strokeLinecap="round" />
+            <line x1="100" y1="170" x2="100" y2="180" stroke="var(--text-secondary)" strokeWidth="3" strokeLinecap="round" />
+            <line x1="20" y1="100" x2="30" y2="100" stroke="var(--text-secondary)" strokeWidth="3" strokeLinecap="round" />
+            <line x1="180" y1="100" x2="170" y2="100" stroke="var(--text-secondary)" strokeWidth="3" strokeLinecap="round" />
 
             {/* Progress Ring */}
             <circle cx="100" cy="100" r="80" fill="none" stroke="var(--bg-tertiary)" strokeWidth="6" />
