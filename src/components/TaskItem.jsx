@@ -1,7 +1,15 @@
 import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Play, Check, Trash2, FastForward } from 'lucide-react';
+import { GripVertical, Play, Check, Trash2, FastForward, Edit2 } from 'lucide-react';
+
+const TASK_COLORS = [
+  '#82A082', // Sage
+  '#D4C4B7', // Sand
+  '#C58B86', // Clay
+  '#75928B', // Slate
+  '#D1B48C'  // Mustard
+];
 
 export default function TaskItem({ 
   task, 
@@ -20,11 +28,12 @@ export default function TaskItem({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: task.id, disabled: isActive || isCompleted });
+  } = useSortable({ id: task.id, disabled: isActive || isCompleted || isEditing });
 
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(task.name);
   const [editTime, setEditTime] = useState(task.estimatedTime);
+  const [editColor, setEditColor] = useState(task.color || '');
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -32,7 +41,7 @@ export default function TaskItem({
     opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 1 : 0,
     background: isActive ? 'var(--bg-secondary)' : isCompleted ? 'rgba(117, 146, 139, 0.1)' : 'var(--bg-secondary)',
-    borderLeft: `4px solid ${isActive ? 'var(--accent-secondary)' : isCompleted ? 'var(--accent-primary)' : 'transparent'}`,
+    borderLeft: `4px solid ${isActive ? 'var(--accent-secondary)' : isCompleted ? 'var(--accent-primary)' : task.color || 'transparent'}`,
     boxShadow: isActive ? 'var(--shadow-md)' : 'var(--shadow-sm)',
     padding: '16px',
     borderRadius: 'var(--radius-md)',
@@ -46,7 +55,8 @@ export default function TaskItem({
     const parsedTime = parseFloat(editTime);
     onUpdate(task.id, { 
       name: editName, 
-      estimatedTime: !isNaN(parsedTime) && parsedTime > 0 ? parsedTime : task.estimatedTime 
+      estimatedTime: !isNaN(parsedTime) && parsedTime > 0 ? parsedTime : task.estimatedTime,
+      color: editColor
     });
     setIsEditing(false);
   };
@@ -54,7 +64,7 @@ export default function TaskItem({
   if (isEditing) {
     return (
       <div style={style}>
-        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: '8px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: '12px' }}>
           <input 
             value={editName}
             onChange={(e) => setEditName(e.target.value)}
@@ -81,6 +91,23 @@ export default function TaskItem({
               <Trash2 size={20} />
             </button>
           </div>
+          
+          {/* Color Picker */}
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Color:</span>
+            {TASK_COLORS.map(c => (
+              <button
+                key={c}
+                onClick={() => setEditColor(editColor === c ? '' : c)}
+                style={{
+                  width: '24px', height: '24px', borderRadius: '50%', background: c,
+                  border: editColor === c ? '2px solid var(--text-primary)' : '2px solid transparent',
+                  cursor: 'pointer', transition: 'all 0.2s'
+                }}
+              />
+            ))}
+          </div>
+
           <button onClick={handleSave} style={{ alignSelf: 'flex-start', background: 'var(--accent-primary)', color: 'white', padding: '6px 12px', borderRadius: '4px', fontSize: '14px' }}>Save</button>
         </div>
       </div>
@@ -88,9 +115,14 @@ export default function TaskItem({
   }
 
   return (
-    <div ref={setNodeRef} style={style}>
+    <div 
+      ref={setNodeRef} 
+      style={{ ...style, cursor: (!isActive && !isCompleted) ? 'grab' : 'default' }} 
+      {...(!isActive && !isCompleted ? attributes : {})} 
+      {...(!isActive && !isCompleted ? listeners : {})}
+    >
       {!isActive && !isCompleted && (
-        <div {...attributes} {...listeners} style={{ cursor: 'grab', color: 'var(--text-secondary)' }}>
+        <div style={{ color: 'var(--text-secondary)' }}>
           <GripVertical size={20} />
         </div>
       )}
@@ -101,7 +133,7 @@ export default function TaskItem({
         </div>
       )}
 
-      <div style={{ flex: 1 }} onClick={() => !isCompleted && setIsEditing(true)}>
+      <div style={{ flex: 1 }}>
         <p style={{ fontWeight: isActive ? 600 : 500, color: isCompleted ? 'var(--text-secondary)' : 'var(--text-primary)', textDecoration: isCompleted ? 'line-through' : 'none' }}>
           {task.name}
         </p>
@@ -113,9 +145,21 @@ export default function TaskItem({
         </div>
       </div>
 
+      {/* Edit Button */}
+      {!isActive && !isCompleted && !isNext && (
+        <button 
+          onPointerDown={(e) => e.stopPropagation()} // Prevent drag when clicking pencil
+          onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
+          style={{ color: 'var(--text-secondary)', padding: '8px' }}
+        >
+          <Edit2 size={16} />
+        </button>
+      )}
+
       {isNext && (
         <button 
-          onClick={onPlay}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => { e.stopPropagation(); onPlay(); }}
           className="animate-pop-in"
           style={{ 
             background: 'var(--accent-secondary)', 
@@ -135,7 +179,8 @@ export default function TaskItem({
 
       {isActive && !isNext && (
         <button 
-          onClick={onFinishTask}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => { e.stopPropagation(); onFinishTask(); }}
           className="animate-pop-in"
           title="Finish Task Early"
           style={{ 

@@ -13,7 +13,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { Plus, Play, Pause, Save, RefreshCw, SkipBack, RotateCcw, Coffee } from 'lucide-react';
+import { Plus, Play, Pause, Save, RefreshCw, SkipBack, RotateCcw, Coffee, Cloud, Edit2 } from 'lucide-react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { playCompletionSound } from '../utils/sound';
 import TaskItem from './TaskItem';
@@ -44,11 +44,20 @@ export default function SessionView({ preferences }) {
     setSessionsData({ sessions: newSessions, lastUpdated: Date.now() });
   };
 
-  const [activeSessionName, setActiveSessionName] = useState('Default');
+  const [activeSessionName, setActiveSessionName] = useLocalStorage('hyperfocus_active_session', 'Default');
   
-  const [tasks, setTasks] = useState(sessions['Default']);
+  const [tasks, setTasks] = useState(sessions[activeSessionName] || sessions['Default']);
   const [activeTaskIndex, setActiveTaskIndex] = useState(-1);
   const [sessionStatus, setSessionStatus] = useState('idle'); // idle, running, paused, finished
+  
+  const [syncStatus, setSyncStatus] = useState('idle');
+  const [missingRoutines, setMissingRoutines] = useState([]);
+
+  useEffect(() => {
+    const handleStatus = (e) => setSyncStatus(e.detail);
+    window.addEventListener('sync-status', handleStatus);
+    return () => window.removeEventListener('sync-status', handleStatus);
+  }, []);
   
   const [timeRemaining, setTimeRemaining] = useState(0); // in seconds
   const [stopwatchTime, setStopwatchTime] = useState(0); // in seconds
@@ -218,10 +227,25 @@ export default function SessionView({ preferences }) {
     }
   };
 
+  const saveChanges = () => {
+    updateSessions({ ...sessions, [activeSessionName]: tasks });
+  };
+
+  const renameRoutine = () => {
+    const name = prompt("Enter a new name for this routine:");
+    if (name && name !== activeSessionName) {
+      const newSessions = { ...sessions };
+      newSessions[name] = tasks;
+      delete newSessions[activeSessionName];
+      updateSessions(newSessions);
+      setActiveSessionName(name);
+    }
+  };
+
   const loadRoutine = (e) => {
     const name = e.target.value;
     setActiveSessionName(name);
-    setTasks(sessions[name]);
+    setTasks(sessions[name] || []);
     resetSession();
   };
 
@@ -270,6 +294,15 @@ export default function SessionView({ preferences }) {
       
       if (json.status === 'success' && json.data) {
         const cloudData = json.data;
+        
+        const cloudKeys = Object.keys(cloudData.sessions || {}).filter(k => k !== 'Default');
+        const missing = cloudKeys.filter(k => !sessions[k]);
+        
+        if (missing.length > 0) {
+          setMissingRoutines(missing.map(name => ({ name, cloudData })));
+          return;
+        }
+
         if (cloudData.lastUpdated && cloudData.lastUpdated > lastUpdated) {
           setSessionsData(cloudData);
           if (cloudData.sessions[activeSessionName]) {
@@ -297,6 +330,25 @@ export default function SessionView({ preferences }) {
     }
   };
 
+  const resolveMissingRoutine = (routineName, action, cloudData) => {
+    const newSessions = { ...sessions };
+    if (action === 'restore') {
+      newSessions[routineName] = cloudData.sessions[routineName];
+    }
+    
+    const nextMissing = missingRoutines.slice(1);
+    setMissingRoutines(nextMissing);
+    
+    if (nextMissing.length === 0) {
+      if (action === 'restore') {
+        setSessionsData({ sessions: newSessions, lastUpdated: cloudData.lastUpdated });
+      } else {
+        updateSessions(newSessions);
+      }
+      setTimeout(performSync, 500);
+    }
+  };
+
   // Sync on mount if URL exists
   useEffect(() => {
     if (preferences?.syncUrl) performSync();
@@ -306,7 +358,11 @@ export default function SessionView({ preferences }) {
   // Sync on manual trigger
   useEffect(() => {
     window.addEventListener('trigger-manual-sync', performSync);
-    return () => window.removeEventListener('trigger-manual-sync', performSync);
+    window.addEventListener('online', performSync);
+    return () => {
+      window.removeEventListener('trigger-manual-sync', performSync);
+      window.removeEventListener('online', performSync);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionsData, preferences?.syncUrl, activeSessionName]);
   
@@ -325,29 +381,62 @@ export default function SessionView({ preferences }) {
       
       {/* Header Controls */}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', alignItems: 'center' }}>
-        <select 
-          value={activeSessionName} 
-          onChange={loadRoutine}
-          disabled={sessionStatus !== 'idle' && sessionStatus !== 'finished'}
-          style={{ 
-            padding: '8px 12px', 
-            borderRadius: 'var(--radius-sm)', 
-            border: '1px solid var(--border-color)',
-            fontFamily: 'inherit',
-            background: 'var(--bg-secondary)'
-          }}
-        >
-          {Object.keys(sessions).map(key => (
-            <option key={key} value={key}>{key}</option>
-          ))}
-        </select>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <select 
+            value={activeSessionName} 
+            onChange={loadRoutine}
+            disabled={sessionStatus !== 'idle' && sessionStatus !== 'finished'}
+            style={{ 
+              padding: '8px 12px', 
+              borderRadius: 'var(--radius-sm)', 
+              border: '1px solid var(--border-color)',
+              fontFamily: 'inherit',
+              background: 'var(--bg-secondary)'
+            }}
+          >
+            {Object.keys(sessions).map(key => (
+              <option key={key} value={key}>{key}</option>
+            ))}
+          </select>
+          {preferences?.syncUrl && (
+            <div title={`Sync Status: ${syncStatus}`}>
+              <Cloud 
+                size={18} 
+                style={{ 
+                  color: syncStatus === 'syncing' ? '#D1B48C' : 
+                         syncStatus === 'success' ? '#82A082' : 
+                         syncStatus === 'error' ? '#C58B86' : 'var(--text-secondary)'
+                }} 
+              />
+            </div>
+          )}
+        </div>
         
-        <button 
-          onClick={saveRoutine}
-          style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--accent-secondary)' }}
-        >
-          <Save size={18} /> <span style={{ fontSize: '14px', fontWeight: 500 }}>Save Routine</span>
-        </button>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          {activeSessionName === 'Default' ? (
+            <button 
+              onClick={saveRoutine}
+              style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--accent-secondary)' }}
+            >
+              <Save size={18} /> <span style={{ fontSize: '14px', fontWeight: 500 }}>Save as New Routine</span>
+            </button>
+          ) : (
+            <>
+              <button 
+                onClick={renameRoutine}
+                style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-secondary)' }}
+              >
+                <Edit2 size={16} /> <span style={{ fontSize: '14px', fontWeight: 500 }}>Rename</span>
+              </button>
+              <button 
+                onClick={saveChanges}
+                style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--accent-secondary)' }}
+              >
+                <Save size={18} /> <span style={{ fontSize: '14px', fontWeight: 500 }}>Save Changes</span>
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Session Progress Bar */}
@@ -572,6 +661,36 @@ export default function SessionView({ preferences }) {
           >
             <RotateCcw size={16} /> Undo
           </button>
+        </div>
+      )}
+      {missingRoutines.length > 0 && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+        }}>
+          <div className="animate-pop-in" style={{
+            background: 'var(--bg-primary)', padding: '24px', borderRadius: 'var(--radius-md)',
+            maxWidth: '300px', width: '100%', boxShadow: 'var(--shadow-lg)'
+          }}>
+            <h3 style={{ margin: '0 0 12px 0' }}>Missing Routine</h3>
+            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '24px' }}>
+              <strong>"{missingRoutines[0].name}"</strong> exists in the database but not on this device. Do you want to restore it, or permanently remove it from your database? This action cannot be undone.
+            </p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <button 
+                onClick={() => resolveMissingRoutine(missingRoutines[0].name, 'delete', missingRoutines[0].cloudData)}
+                style={{ color: '#C58B86', padding: '8px', fontSize: '14px', fontWeight: 600, border: 'none', background: 'transparent', cursor: 'pointer' }}
+              >
+                Delete
+              </button>
+              <button 
+                onClick={() => resolveMissingRoutine(missingRoutines[0].name, 'restore', missingRoutines[0].cloudData)}
+                style={{ background: 'var(--accent-primary)', color: 'white', padding: '8px 16px', borderRadius: 'var(--radius-sm)', fontSize: '14px', fontWeight: 600, border: 'none', cursor: 'pointer' }}
+              >
+                Restore
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -29,6 +29,8 @@ export default function SettingsModal({ onClose, preferences, setPreferences, sy
         background: 'var(--bg-primary)',
         width: '100%',
         maxWidth: '400px',
+        maxHeight: '90vh',
+        overflowY: 'auto',
         borderRadius: 'var(--radius-lg)',
         padding: '24px',
         boxShadow: 'var(--shadow-lg)'
