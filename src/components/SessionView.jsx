@@ -481,6 +481,28 @@ export default function SessionView({ preferences }) {
         isActive={sessionStatus === 'running' || sessionStatus === 'waiting_next'}
       />
 
+      {/* Current Task Banner */}
+      {(sessionStatus === 'running' || sessionStatus === 'waiting_next') && activeTaskIndex >= 0 && (
+        <div className="animate-pop-in" style={{
+          background: 'var(--bg-secondary)',
+          border: '2px solid var(--accent-primary)',
+          borderRadius: 'var(--radius-lg)',
+          padding: '16px 20px',
+          marginBottom: '24px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          boxShadow: 'var(--shadow-md)'
+        }}>
+          <span style={{ fontSize: '12px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600, marginBottom: '4px' }}>
+            Current Task
+          </span>
+          <span style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', textAlign: 'center' }}>
+            {tasks[activeTaskIndex]?.name}
+          </span>
+        </div>
+      )}
+
       {/* Play/Pause Main Controls */}
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px', position: 'sticky', top: '20px', zIndex: 10 }}>
         {sessionStatus === 'idle' && tasks.length > 0 && (
