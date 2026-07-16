@@ -479,6 +479,7 @@ export default function SessionView({ preferences }) {
         timeRemaining={timeRemaining}
         stopwatchTime={stopwatchTime}
         isActive={sessionStatus === 'running' || sessionStatus === 'waiting_next'}
+        clockShape={preferences?.clockShape || 'classic'}
       />
 
       {/* Current Task Banner */}

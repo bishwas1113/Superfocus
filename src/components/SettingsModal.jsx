@@ -1,4 +1,4 @@
-import { X, Moon, Sun, Palette, Volume2, VolumeX, Bell, Music } from 'lucide-react';
+import { X, Moon, Sun, Palette, Volume2, VolumeX, Bell, Music, Clock, Circle } from 'lucide-react';
 import { playCompletionSound } from '../utils/sound';
 
 export default function SettingsModal({ onClose, preferences, setPreferences, syncStatus }) {
@@ -95,6 +95,25 @@ export default function SettingsModal({ onClose, preferences, setPreferences, sy
               label="Silent" 
               isActive={preferences.sound === 'silent'} 
               onClick={() => handleSoundChange('silent')}
+            />
+          </div>
+        </div>
+
+        {/* Clock Shape Settings */}
+        <div style={{ marginTop: '32px' }}>
+          <h3 style={{ fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-secondary)', marginBottom: '12px' }}>Clock Style</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <SettingOption 
+              icon={<Bell size={20} />} 
+              label="Classic Alarm (Red Frame)" 
+              isActive={preferences.clockShape === 'classic' || !preferences.clockShape} 
+              onClick={() => setPreferences(prev => ({ ...prev, clockShape: 'classic' }))}
+            />
+            <SettingOption 
+              icon={<Circle size={20} />} 
+              label="Minimalist Ring" 
+              isActive={preferences.clockShape === 'minimal'} 
+              onClick={() => setPreferences(prev => ({ ...prev, clockShape: 'minimal' }))}
             />
           </div>
         </div>

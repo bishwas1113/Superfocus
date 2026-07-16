@@ -11,6 +11,14 @@ const TASK_COLORS = [
   '#D1B48C'  // Mustard
 ];
 
+const hexToRgba = (hex, opacity) => {
+  if (!hex || !hex.startsWith('#')) return 'transparent';
+  let r = parseInt(hex.slice(1, 3), 16),
+      g = parseInt(hex.slice(3, 5), 16),
+      b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+};
+
 export default function TaskItem({ 
   task, 
   isActive, 
@@ -40,7 +48,7 @@ export default function TaskItem({
     transition,
     opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 1 : 0,
-    background: isActive ? 'var(--bg-secondary)' : isCompleted ? 'rgba(117, 146, 139, 0.1)' : 'var(--bg-secondary)',
+    background: task.color ? hexToRgba(task.color, isCompleted ? 0.1 : isActive ? 0.35 : 0.2) : (isActive ? 'var(--bg-secondary)' : isCompleted ? 'rgba(117, 146, 139, 0.1)' : 'var(--bg-secondary)'),
     borderLeft: `4px solid ${isActive ? 'var(--accent-secondary)' : isCompleted ? 'var(--accent-primary)' : task.color || 'transparent'}`,
     boxShadow: isActive ? 'var(--shadow-md)' : 'var(--shadow-sm)',
     padding: '16px',
