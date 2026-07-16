@@ -37,8 +37,8 @@ export default function SessionView({ preferences }) {
     }
     return { sessions: { 'Default': DEFAULT_TASKS }, lastUpdated: Date.now() };
   });
-  
-  const { sessions, lastUpdated } = sessionsData;
+  const sessions = sessionsData?.sessions || { 'Default': DEFAULT_TASKS };
+  const lastUpdated = sessionsData?.lastUpdated || Date.now();
 
   const updateSessions = (newSessions) => {
     setSessionsData({ sessions: newSessions, lastUpdated: Date.now() });
@@ -46,7 +46,7 @@ export default function SessionView({ preferences }) {
 
   const [activeSessionName, setActiveSessionName] = useLocalStorage('hyperfocus_active_session', 'Default');
   
-  const [tasks, setTasks] = useState(sessions[activeSessionName] || sessions['Default']);
+  const [tasks, setTasks] = useState(sessions[activeSessionName] || sessions['Default'] || []);
   const [activeTaskIndex, setActiveTaskIndex] = useState(-1);
   const [sessionStatus, setSessionStatus] = useState('idle'); // idle, running, paused, finished
   
@@ -68,13 +68,14 @@ export default function SessionView({ preferences }) {
   const lastTickRef = useRef(null);
   
   // Calculate Session Metrics
-  const totalEstimatedSeconds = tasks.reduce((acc, task) => acc + (task.estimatedTime * 60), 0);
+  const safeTasks = tasks || [];
+  const totalEstimatedSeconds = safeTasks.reduce((acc, task) => acc + (task.estimatedTime * 60), 0);
   
   let totalElapsedSeconds = 0;
   if (sessionStatus === 'finished') {
-    totalElapsedSeconds = tasks.reduce((acc, task) => acc + (task.actualTime || 0), 0);
+    totalElapsedSeconds = safeTasks.reduce((acc, task) => acc + (task.actualTime || 0), 0);
   } else if (sessionStatus !== 'idle') {
-    totalElapsedSeconds = tasks.reduce((acc, task, index) => {
+    totalElapsedSeconds = safeTasks.reduce((acc, task, index) => {
       if (index < activeTaskIndex) return acc + (task.actualTime || 0);
       if (index === activeTaskIndex) return acc + stopwatchTime;
       return acc;

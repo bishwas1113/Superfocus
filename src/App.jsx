@@ -11,9 +11,11 @@ function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [syncStatus, setSyncStatus] = useState('idle');
 
+  const safePreferences = preferences || { theme: 'japandi', sound: 'chime', syncUrl: '' };
+
   useEffect(() => {
-    document.body.setAttribute('data-theme', preferences.theme);
-  }, [preferences.theme]);
+    document.body.setAttribute('data-theme', safePreferences.theme || 'japandi');
+  }, [safePreferences.theme]);
 
   useEffect(() => {
     const handleStatus = (e) => setSyncStatus(e.detail);
@@ -45,7 +47,7 @@ function App() {
 
         <main style={{ flex: 1, overflowY: 'auto' }}>
           <Routes>
-            <Route path="/" element={<SessionView preferences={preferences} />} />
+            <Route path="/" element={<SessionView preferences={safePreferences} />} />
             <Route path="/rewards" element={<RewardsView />} />
           </Routes>
         </main>
@@ -89,7 +91,7 @@ function App() {
         {isSettingsOpen && (
           <SettingsModal 
             onClose={() => setIsSettingsOpen(false)} 
-            preferences={preferences} 
+            preferences={safePreferences} 
             setPreferences={setPreferences} 
             syncStatus={syncStatus}
           />
