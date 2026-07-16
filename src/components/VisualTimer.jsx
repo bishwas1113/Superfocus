@@ -19,7 +19,7 @@ export default function VisualTimer({ estimatedTimeMinutes, timeRemaining, stopw
   const handRotation = (100 - percentage) * 3.6;
 
   return (
-    <div className={isFinished ? 'animate-shake' : ''} style={{
+    <div className={isFinished ? 'animate-alarm' : ''} style={{
       background: 'var(--bg-secondary)',
       padding: '32px 20px',
       borderRadius: 'var(--radius-lg)',

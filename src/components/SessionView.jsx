@@ -481,70 +481,8 @@ export default function SessionView({ preferences }) {
         isActive={sessionStatus === 'running' || sessionStatus === 'waiting_next'}
       />
 
-      {/* Task List */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-        <h2 style={{ color: 'var(--text-primary)' }}>Tasks</h2>
-        {sessionStatus === 'idle' && (
-          <button 
-            onClick={addTask}
-            title="Add Task"
-            className="animate-pop-in"
-            style={{ 
-              background: 'var(--text-primary)', 
-              color: 'white', 
-              width: '36px', 
-              height: '36px', 
-              borderRadius: '50%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: 'var(--shadow-sm)'
-            }}
-          >
-            <Plus size={20} />
-          </button>
-        )}
-      </div>
-
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={tasks} strategy={verticalListSortingStrategy}>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {tasks.length === 0 ? (
-              <div style={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                padding: '40px 20px',
-                color: 'var(--text-secondary)',
-                background: 'var(--bg-tertiary)',
-                borderRadius: 'var(--radius-lg)',
-                border: '1px dashed var(--border-color)',
-                textAlign: 'center',
-                gap: '12px'
-              }}>
-                <Coffee size={40} style={{ color: 'var(--accent-primary)', opacity: 0.5 }} />
-                <p>No tasks in this routine.<br/>Add a task to start focusing.</p>
-              </div>
-            ) : (
-              tasks.map((task, index) => (
-                <TaskItem 
-                  key={task.id} 
-                  task={task} 
-                  isActive={index === activeTaskIndex}
-                  isCompleted={index < activeTaskIndex || (sessionStatus === 'finished' && index <= activeTaskIndex)}
-                  isNext={sessionStatus === 'waiting_next' && index === activeTaskIndex}
-                  onUpdate={updateTask}
-                  onDelete={deleteTask}
-                  onPlay={playNextTask}
-                  onFinishTask={playNextTask}
-                />
-              ))
-            )}
-          </div>
-        </SortableContext>
-      </DndContext>
-
       {/* Play/Pause Main Controls */}
-      <div style={{ position: 'sticky', bottom: '20px', display: 'flex', justifyContent: 'center', marginTop: '32px' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px', position: 'sticky', top: '20px', zIndex: 10 }}>
         {sessionStatus === 'idle' && tasks.length > 0 && (
           <button 
             onClick={startSession}
@@ -630,6 +568,70 @@ export default function SessionView({ preferences }) {
           </button>
         )}
       </div>
+
+      {/* Task List */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+        <h2 style={{ color: 'var(--text-primary)' }}>Tasks</h2>
+        {sessionStatus === 'idle' && (
+          <button 
+            onClick={addTask}
+            title="Add Task"
+            className="animate-pop-in"
+            style={{ 
+              background: 'var(--text-primary)', 
+              color: 'white', 
+              width: '36px', 
+              height: '36px', 
+              borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: 'var(--shadow-sm)'
+            }}
+          >
+            <Plus size={20} />
+          </button>
+        )}
+      </div>
+
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={tasks} strategy={verticalListSortingStrategy}>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {tasks.length === 0 ? (
+              <div style={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                padding: '40px 20px',
+                color: 'var(--text-secondary)',
+                background: 'var(--bg-tertiary)',
+                borderRadius: 'var(--radius-lg)',
+                border: '1px dashed var(--border-color)',
+                textAlign: 'center',
+                gap: '12px'
+              }}>
+                <Coffee size={40} style={{ color: 'var(--accent-primary)', opacity: 0.5 }} />
+                <p>No tasks in this routine.<br/>Add a task to start focusing.</p>
+              </div>
+            ) : (
+              tasks.map((task, index) => (
+                <TaskItem 
+                  key={task.id} 
+                  task={task} 
+                  isActive={index === activeTaskIndex}
+                  isCompleted={index < activeTaskIndex || (sessionStatus === 'finished' && index <= activeTaskIndex)}
+                  isNext={sessionStatus === 'waiting_next' && index === activeTaskIndex}
+                  onUpdate={updateTask}
+                  onDelete={deleteTask}
+                  onPlay={playNextTask}
+                  onFinishTask={playNextTask}
+                />
+              ))
+            )}
+          </div>
+        </SortableContext>
+      </DndContext>
+
+      <div style={{ paddingBottom: '40px' }} />
 
       {sessionStatus === 'finished' && (
         <RewardModal onClose={() => setSessionStatus('idle')} />
