@@ -1,7 +1,7 @@
 import { X, Moon, Sun, Palette, Volume2, VolumeX, Bell, Music } from 'lucide-react';
 import { playCompletionSound } from '../utils/sound';
 
-export default function SettingsModal({ onClose, preferences, setPreferences }) {
+export default function SettingsModal({ onClose, preferences, setPreferences, syncStatus }) {
   
   const handleThemeChange = (theme) => {
     setPreferences(prev => ({ ...prev, theme }));
