@@ -211,13 +211,16 @@ export default function SessionView({ preferences }) {
     }
   };
 
-  const resetSession = () => {
+  const resetSession = (overrideTasks) => {
     setSessionStatus('idle');
     setActiveTaskIndex(-1);
     setTimeRemaining(0);
     setStopwatchTime(0);
-    // Reset actual times
-    setTasks(tasks.map(t => ({ ...t, actualTime: undefined })));
+    if (overrideTasks) {
+      setTasks(overrideTasks.map(t => ({ ...t, actualTime: undefined })));
+    } else {
+      setTasks(prev => prev.map(t => ({ ...t, actualTime: undefined })));
+    }
   };
 
   const saveRoutine = () => {
@@ -246,8 +249,7 @@ export default function SessionView({ preferences }) {
   const loadRoutine = (e) => {
     const name = e.target.value;
     setActiveSessionName(name);
-    setTasks(sessions[name] || []);
-    resetSession();
+    resetSession(sessions[name] || []);
   };
 
   const addTask = () => {
