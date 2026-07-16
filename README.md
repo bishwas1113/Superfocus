@@ -1,6 +1,6 @@
-# Hyperfocus
+# Superfocus
 
-Hyperfocus is a specialized web application designed to support individuals with ADHD by providing a structured, distraction-free environment for task management and hyperfocus sessions. 
+Superfocus is a specialized web application designed to support individuals with ADHD by providing a structured, distraction-free environment for task management and hyperfocus sessions. 
 
 The app features a visual timer, sequential task progression, randomized rewards, and customizable themes—all tailored to help you maintain momentum and stay on track without feeling overwhelmed.
 
