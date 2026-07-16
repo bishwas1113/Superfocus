@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-export default function VisualTimer({ estimatedTimeMinutes, timeRemaining, stopwatchTime, isActive }) {
+export default function VisualTimer({ estimatedTimeMinutes, timeRemaining, stopwatchTime, isActive, clockShape = 'classic', clockColor = '#D32F2F' }) {
   // Calculate percentage for circular progress
   const totalSeconds = estimatedTimeMinutes * 60;
   const percentage = totalSeconds > 0 ? (timeRemaining / totalSeconds) * 100 : 0;
@@ -87,14 +87,14 @@ export default function VisualTimer({ estimatedTimeMinutes, timeRemaining, stopw
             
             {/* Left Bell */}
             <g transform="translate(65, 55) rotate(-25)">
-              <path d="M -30 0 A 30 30 0 0 1 30 0 Z" fill="#D32F2F" />
-              <rect x="-30" y="0" width="60" height="6" fill="#B71C1C" rx="2" />
+              <path d="M -30 0 A 30 30 0 0 1 30 0 Z" fill={clockColor} />
+              <rect x="-30" y="0" width="60" height="6" fill="#000000" opacity="0.2" rx="2" />
             </g>
             
             {/* Right Bell */}
             <g transform="translate(175, 55) rotate(25)">
-              <path d="M -30 0 A 30 30 0 0 1 30 0 Z" fill="#D32F2F" />
-              <rect x="-30" y="0" width="60" height="6" fill="#B71C1C" rx="2" />
+              <path d="M -30 0 A 30 30 0 0 1 30 0 Z" fill={clockColor} />
+              <rect x="-30" y="0" width="60" height="6" fill="#000000" opacity="0.2" rx="2" />
             </g>
 
             {/* Legs */}
@@ -106,8 +106,8 @@ export default function VisualTimer({ estimatedTimeMinutes, timeRemaining, stopw
             <circle cx="180" cy="230" r="5" fill="#7f8c8d" />
 
             {/* Main Red Frame */}
-            <circle cx="120" cy="130" r="95" fill="#D32F2F" />
-            <circle cx="120" cy="130" r="85" fill="#B71C1C" />
+            <circle cx="120" cy="130" r="95" fill={clockColor} />
+            <circle cx="120" cy="130" r="85" fill="#000000" opacity="0.15" />
 
             {/* White Clock Face (original) */}
             <circle cx="120" cy="130" r="80" fill="var(--bg-primary)" />

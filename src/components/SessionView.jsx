@@ -480,6 +480,7 @@ export default function SessionView({ preferences }) {
         stopwatchTime={stopwatchTime}
         isActive={sessionStatus === 'running' || sessionStatus === 'waiting_next'}
         clockShape={preferences?.clockShape || 'classic'}
+        clockColor={preferences?.clockColor || '#D32F2F'}
       />
 
       {/* Current Task Banner */}

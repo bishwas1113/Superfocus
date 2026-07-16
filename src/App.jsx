@@ -7,11 +7,11 @@ import SettingsModal from './components/SettingsModal';
 import { useLocalStorage } from './hooks/useLocalStorage';
 
 function App() {
-  const [preferences, setPreferences] = useLocalStorage('hyperfocus_prefs', { theme: 'japandi', sound: 'chime', syncUrl: '', clockShape: 'classic' });
+  const [preferences, setPreferences] = useLocalStorage('hyperfocus_prefs', { theme: 'japandi', sound: 'chime', syncUrl: '', clockShape: 'classic', clockColor: '#D32F2F' });
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [syncStatus, setSyncStatus] = useState('idle');
 
-  const safePreferences = preferences || { theme: 'japandi', sound: 'chime', syncUrl: '', clockShape: 'classic' };
+  const safePreferences = preferences || { theme: 'japandi', sound: 'chime', syncUrl: '', clockShape: 'classic', clockColor: '#D32F2F' };
 
   useEffect(() => {
     document.body.setAttribute('data-theme', safePreferences.theme || 'japandi');

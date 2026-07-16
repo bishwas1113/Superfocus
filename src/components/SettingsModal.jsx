@@ -105,7 +105,7 @@ export default function SettingsModal({ onClose, preferences, setPreferences, sy
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <SettingOption 
               icon={<Bell size={20} />} 
-              label="Classic Alarm (Red Frame)" 
+              label="Classic Alarm Frame" 
               isActive={preferences.clockShape === 'classic' || !preferences.clockShape} 
               onClick={() => setPreferences(prev => ({ ...prev, clockShape: 'classic' }))}
             />
@@ -114,6 +114,38 @@ export default function SettingsModal({ onClose, preferences, setPreferences, sy
               label="Minimalist Ring" 
               isActive={preferences.clockShape === 'minimal'} 
               onClick={() => setPreferences(prev => ({ ...prev, clockShape: 'minimal' }))}
+            />
+          </div>
+        </div>
+
+        {/* Clock Color Settings */}
+        <div style={{ marginTop: '32px' }}>
+          <h3 style={{ fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-secondary)', marginBottom: '12px' }}>Clock Color</h3>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
+            {['#D32F2F', '#82A082', '#D4C4B7', '#C58B86', '#75928B', '#D1B48C', '#E3A999'].map(color => (
+              <button
+                key={color}
+                onClick={() => setPreferences(prev => ({ ...prev, clockColor: color }))}
+                style={{
+                  width: '36px', height: '36px', borderRadius: '50%',
+                  background: color,
+                  border: preferences.clockColor === color ? '3px solid var(--text-primary)' : '2px solid transparent',
+                  boxShadow: 'var(--shadow-sm)',
+                  transition: 'transform 0.1s ease'
+                }}
+              />
+            ))}
+            <div style={{ width: '1px', height: '24px', background: 'var(--border-color)', margin: '0 4px' }} />
+            <input 
+              type="color" 
+              value={preferences.clockColor || '#D32F2F'}
+              onChange={(e) => setPreferences(prev => ({ ...prev, clockColor: e.target.value }))}
+              style={{
+                width: '32px', height: '32px',
+                border: 'none', padding: 0,
+                background: 'transparent', cursor: 'pointer',
+              }}
+              title="Custom Color"
             />
           </div>
         </div>
