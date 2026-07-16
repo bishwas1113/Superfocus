@@ -13,7 +13,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { Plus, Play, Pause, Save, RefreshCw, SkipBack, RotateCcw, Coffee, Cloud, Edit2 } from 'lucide-react';
+import { Plus, Play, Pause, Save, RefreshCw, SkipBack, RotateCcw, Coffee, Cloud, Edit2, Check } from 'lucide-react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { playCompletionSound } from '../utils/sound';
 import TaskItem from './TaskItem';
@@ -492,14 +492,29 @@ export default function SessionView({ preferences }) {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          boxShadow: 'var(--shadow-md)'
+          boxShadow: 'var(--shadow-md)',
+          gap: '12px'
         }}>
-          <span style={{ fontSize: '12px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600, marginBottom: '4px' }}>
-            Current Task
-          </span>
-          <span style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', textAlign: 'center' }}>
-            {tasks[activeTaskIndex]?.name}
-          </span>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <span style={{ fontSize: '12px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600, marginBottom: '4px' }}>
+              Current Task
+            </span>
+            <span style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', textAlign: 'center' }}>
+              {tasks[activeTaskIndex]?.name}
+            </span>
+          </div>
+          
+          <button 
+            onClick={playNextTask}
+            style={{ 
+              background: 'var(--accent-primary)', color: 'white', 
+              padding: '12px 24px', borderRadius: 'var(--radius-full)',
+              fontWeight: 600, border: 'none', display: 'flex', alignItems: 'center', gap: '8px',
+              fontSize: '15px'
+            }}
+          >
+            <Check size={20} /> Finish Task
+          </button>
         </div>
       )}
 
